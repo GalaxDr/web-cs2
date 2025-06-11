@@ -8,14 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-// Definindo o tipo da Skin para clareza
+// Defining the Skin type for clarity
 interface Skin {
   skin: string
-  desgaste: string
+  wear: string
 }
 
 export default function CSInventoryFetcher() {
-  // O estado agora armazena o Trade Link completo
+  // State now holds the full Trade Link
   const [tradeLink, setTradeLink] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,7 +24,7 @@ export default function CSInventoryFetcher() {
 
   const handleFetchInventory = async () => {
     if (!tradeLink.trim()) {
-      setError("Por favor, cole um Steam Trade Link válido.")
+      setError("Please paste a valid Steam Trade Link.")
       return
     }
 
@@ -34,41 +34,41 @@ export default function CSInventoryFetcher() {
     setFetchedSteamId(null)
 
     try {
-      // --- LÓGICA DE PARSING E CONVERSÃO ---
+      // --- PARSING AND CONVERSION LOGIC ---
       const url = new URL(tradeLink)
       const partnerId = url.searchParams.get("partner")
 
       if (!partnerId || !/^\d+$/.test(partnerId)) {
-        throw new Error("O Trade Link é inválido ou não contém um ID de parceiro.")
+        throw new Error("The Trade Link is invalid or does not contain a partner ID.")
       }
       
-      // Fórmula de conversão de Account ID (partner) para SteamID64
+      // Formula to convert Account ID (partner) to SteamID64
       const steamId64 = (BigInt(partnerId) + BigInt("76561197960265728")).toString()
       setFetchedSteamId(steamId64)
       
       console.log(`Trade Link Parsed. Partner ID: ${partnerId}, Converted to SteamID64: ${steamId64}`)
 
-      // Chamada para nossa API Route com o SteamID64 convertido
+      // Call our API Route with the converted SteamID64
       const response = await fetch(`/api/inventory/${steamId64}`)
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || `A API retornou um erro: ${response.statusText}`)
+        throw new Error(errorData.error || `The API returned an error: ${response.statusText}`)
       }
 
       const data: Skin[] = await response.json()
       
       if (data.length === 0) {
-        setError("Inventário encontrado, mas está vazio ou não contém skins com desgaste.")
+        setError("Inventory found, but it's empty or contains no skins with wear.")
       } else {
         setInventoryData(data)
       }
 
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message || "Ocorreu um erro desconhecido.")
+        setError(err.message || "An unknown error occurred.")
       } else {
-        setError("Ocorreu um erro desconhecido.")
+        setError("An unknown error occurred.")
       }
       setInventoryData(null)
     } finally {
@@ -82,20 +82,20 @@ export default function CSInventoryFetcher() {
         <header className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">CS Inventory Fetcher</h1>
           <p className="text-muted-foreground">
-            Cole um Steam Trade Link para ver o inventário de um usuário.
+            Paste a Steam Trade Link to view a user&#39;s inventory.
           </p>
         </header>
 
         <div className="flex flex-col md:flex-row gap-3 mb-8">
           <Input
-            placeholder="Cole o Steam Trade Link aqui..."
+            placeholder="Paste the Steam Trade Link here..."
             value={tradeLink}
             onChange={(e) => setTradeLink(e.target.value)}
             className="flex-grow"
           />
           <Button onClick={handleFetchInventory} className="flex items-center gap-2" disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-            Buscar Inventário
+            {loading ? 'Fetching...' : 'Fetch Inventory'}
           </Button>
         </div>
 
@@ -103,14 +103,14 @@ export default function CSInventoryFetcher() {
           {loading && (
             <div className="flex flex-col items-center justify-center p-12">
               <Loader2 className="h-12 w-12 animate-spin mb-4 text-primary" />
-              <p className="text-muted-foreground">Buscando inventário, aguarde...</p>
+              <p className="text-muted-foreground">Fetching inventory, please wait...</p>
             </div>
           )}
 
           {!loading && error && (
             <Alert variant="destructive" className="mb-6">
               <XCircle className="h-4 w-4" />
-              <AlertTitle>Erro</AlertTitle>
+              <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -118,9 +118,9 @@ export default function CSInventoryFetcher() {
           {!loading && !error && inventoryData && (
             <Card>
               <CardHeader>
-                <CardTitle>Inventário Encontrado</CardTitle>
+                <CardTitle>Inventory Found</CardTitle>
                 <CardDescription>
-                  Exibindo {inventoryData.length} skins para o SteamID: {fetchedSteamId}
+                  Showing {inventoryData.length} skins for SteamID: {fetchedSteamId}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -128,14 +128,14 @@ export default function CSInventoryFetcher() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Skin</TableHead>
-                      <TableHead>Desgaste</TableHead>
+                      <TableHead>Wear</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {inventoryData.map((item, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">{item.skin}</TableCell>
-                        <TableCell className="text-muted-foreground">{item.desgaste}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.wear}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -147,14 +147,14 @@ export default function CSInventoryFetcher() {
           {!loading && !error && !inventoryData && (
             <Card className="border-dashed flex flex-col items-center justify-center p-12 text-center">
               <Package2 className="h-16 w-16 mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">O inventário será exibido aqui.</p>
+              <p className="text-muted-foreground">The inventory will be displayed here.</p>
               <a 
                 href="https://steamcommunity.com/id/me/tradeoffers/privacy#trade_offer_access_url" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-sm text-blue-500 hover:underline mt-2 flex items-center gap-1"
               >
-                Não sabe seu Trade Link? Encontre aqui <Link className="h-3 w-3" />
+                Don&#39;t know your Trade Link? Find it here <Link className="h-3 w-3" />
               </a>
             </Card>
           )}

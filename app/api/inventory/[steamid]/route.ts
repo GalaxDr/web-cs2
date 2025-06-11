@@ -66,7 +66,7 @@ export async function GET(
     });
 
     if (cleanedInventory.length === 0) {
-      return NextResponse.json({ error: "No skins found. The inventory might be private, or the session cookie for csgo.exchange has expired." }, { status: 404 });
+      return NextResponse.json({ error: "No skins found. Your inventory might be private." }, { status: 404 });
     }
 
     console.log(`API Route: Found ${cleanedInventory.length} skins with wear.`);
