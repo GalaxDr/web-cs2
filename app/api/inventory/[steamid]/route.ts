@@ -120,14 +120,16 @@ function generateSearchVariations(item: ScrapedItem): string[] {
         `${starPrefix}${statTrakPrefix}${baseName}`,
         `${statTrakPrefix}${baseName}`,
         `★ ${baseName}`,
-        baseName
+        baseName,
+        item.wear
       );
     } else {
       variations.push(
         `${starPrefix}${statTrakPrefix}${baseName} (${item.wear})`,
         `${statTrakPrefix}${baseName} (${item.wear})`,
         `★ ${baseName} (${item.wear})`,
-        `${baseName} (${item.wear})`
+        `${baseName} (${item.wear})`,
+        item.wear
       );
     }
   }
@@ -138,14 +140,16 @@ function generateSearchVariations(item: ScrapedItem): string[] {
       `★ ${baseName} (${item.wear})`,
       `${baseName} (${item.wear})`,
       `${starPrefix}${statTrakPrefix}${baseName}`,
-      `${baseName}`
+      `${baseName}`,
+      item.wear
     );
   }
   else {
     variations.push(
       `${souvenirPrefix}${statTrakPrefix}${baseName} (${item.wear})`,
       `${statTrakPrefix}${baseName} (${item.wear})`,
-      `${baseName} (${item.wear})`
+      `${baseName} (${item.wear})`,
+      item.wear,
     );
   }
   
