@@ -2,12 +2,20 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Search, Package2, Loader2, XCircle, Link as LinkIcon, TrendingUp } from "lucide-react"
+import { Search, Package2, Loader2, XCircle, Link as LinkIcon, TrendingUp, ShoppingCart, Copy, CheckCircle2, ExternalLink } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 // The interface for a skin
 interface Skin {
@@ -17,13 +25,17 @@ interface Skin {
   imageUrl: string
 }
 
+const BOT_TRADELINK = process.env.NEXT_PUBLIC_BOT_TRADELINK
+
 export default function CSInventoryFetcher() {
   const [tradeLink, setTradeLink] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [inventoryData, setInventoryData] = useState<Skin[] | null>(null)
   const [fetchedSteamId, setFetchedSteamId] = useState<string | null>(null)
-  const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [totalPrice, setTotalPrice] = useState<number>(0)
+  const [copied, setCopied] = useState(false)
+  const [showSellDialog, setShowSellDialog] = useState(false)
 
   const handleFetchInventory = async () => {
     if (!tradeLink.trim()) {
@@ -48,7 +60,6 @@ export default function CSInventoryFetcher() {
       const steamId64 = (BigInt(partnerId) + BigInt("76561197960265728")).toString()
       setFetchedSteamId(steamId64)
       
-      console.log(`Trade Link Parsed. Partner ID: ${partnerId}, Converted to SteamID64: ${steamId64}`)
 
       const response = await fetch(`/api/inventory/${steamId64}`)
 
@@ -102,13 +113,27 @@ export default function CSInventoryFetcher() {
     }
   }
 
+  const handleCopyTradeLink = async () => {
+    try {
+      if (BOT_TRADELINK) {
+        await navigator.clipboard.writeText(BOT_TRADELINK)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } else {
+        throw new Error("Trade link is not available.")
+      }
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center p-4 md:p-8">
       <div className="w-full max-w-4xl">
         <header className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">CS Inventory Fetcher</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">CS2 Skins Seller</h1>
           <p className="text-muted-foreground">
-            Paste a Steam Trade Link to view a user&apos;s inventory value.
+            Paste a Steam Trade Link to view and sell your skins.
           </p>
         </header>
 
@@ -148,9 +173,74 @@ export default function CSInventoryFetcher() {
                 <CardDescription>
                   Showing {inventoryData.length} skins valued over $0.01 for SteamID: {fetchedSteamId}
                 </CardDescription>
-                <div className="flex items-center gap-2 text-2xl font-bold text-primary pt-2">
-                  <TrendingUp className="h-6 w-6" />
-                  Total Value: ${totalPrice.toFixed(2)}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-2xl font-bold text-primary pt-2">
+                    <TrendingUp className="h-6 w-6" />
+                    Total Value: ${totalPrice.toFixed(2)}
+                  </div>
+                  <Dialog open={showSellDialog} onOpenChange={setShowSellDialog}>
+                    <DialogTrigger asChild>
+                      <Button className="flex items-center gap-2">
+                        <ShoppingCart className="h-4 w-4" />
+                        Sell Skins
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Sell Your Skins</DialogTitle>
+                        <DialogDescription>
+                          Send a trade offer to our bot to sell your skins. Copy the trade link below and send your items.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex items-center space-x-2 pt-4">
+                        <div className="grid flex-1 gap-2">
+                          <Input
+                            id="bot-trade-link"
+                            defaultValue={BOT_TRADELINK}
+                            readOnly
+                            className="text-sm"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="px-3"
+                          onClick={handleCopyTradeLink}
+                        >
+                          {copied ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <div className="flex justify-center pt-4">
+                        <Button
+                          asChild
+                          className="flex items-center gap-2"
+                          variant="default"
+                        >
+                          <a
+                            href={BOT_TRADELINK}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Open Trade Link
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      </div>
+                      <div className="text-sm text-muted-foreground pt-4">
+                        <p className="font-semibold mb-2">How to sell:</p>
+                        <ol className="list-decimal list-inside space-y-1">
+                          <li>Click &quot;Open Trade Link&quot; or copy the link above</li>
+                          <li>Select the skins you want to sell</li>
+                          <li>Send the trade offer</li>
+                          <li>Receive payment after trade confirmation</li>
+                        </ol>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardHeader>
               <CardContent>
@@ -160,7 +250,7 @@ export default function CSInventoryFetcher() {
                       <TableHead>Image</TableHead>
                       <TableHead>Skin</TableHead>
                       <TableHead>Wear</TableHead>
-                      <TableHead className="text-right">Price (Buff)</TableHead>
+                      <TableHead className="text-right">Price (Dollars)</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
