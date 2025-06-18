@@ -6,8 +6,8 @@ import { ThemeProvider } from "../components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "CS Inventory Fetcher",
-  description: "View CS:GO inventories using SteamID64",
+  title: "CS2 Inventory Seller",
+  description: "Sell CS2 inventories using Tradelink",
 }
 
 export default function RootLayout({

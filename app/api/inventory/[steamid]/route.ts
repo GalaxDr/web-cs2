@@ -235,6 +235,7 @@ async function enrichAllItems(items: ScrapedItem[]): Promise<FinalItemInfo[]> {
       // Ajustar nome para exibição
       let displayName = item.name;
       if (item.category.includes('StatTrak')) displayName = `StatTrak™ ${displayName}`;
+      if (item.category.includes('Souvenir')) displayName = `Souvenir ${displayName}`
       if ((item.isKnife || item.isGloves) && !displayName.startsWith('★')) displayName = `★ ${displayName}`;
       itemData.skin = displayName;
       
